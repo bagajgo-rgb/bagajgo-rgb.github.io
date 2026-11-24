@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BagajGO Samarkand</title>
+<meta name="description" content="Носильщик на вокзале Самарканда: заказ онлайн на узбекском, русском, английском и китайском.">
+<meta name="theme-color" content="#1D4E89">
+<style>
+/* Шрифты только системные: страница должна открываться и у туристов из Китая, без Google Fonts */
+:root{
+  --stone:#F2F5F7;
+  --paper:#FFFFFF;
+  --ink:#14213D;
+  --muted:#5B6578;
+  --line:#D5DCE4;
+  --cobalt:#1D4E89;
+  --cobalt-deep:#163B68;
+  --tile:#129AA3;
+  --saffron:#E3A233;
+  --danger:#B42318;
+  --radius-field:10px;
+  --radius-panel:18px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --stone:#0F1724;
+    --paper:#172235;
+    --ink:#EEF2F7;
+    --muted:#A9B4C4;
+    --line:#2C3A52;
+    --cobalt:#5B8FD6;
+    --cobalt-deep:#4677BC;
+    --tile:#2FC0C8;
+    --saffron:#F0B54F;
+    --danger:#FF8A80;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--stone);
+  color:var(--ink);
+  font-family:var(--font);
+  font-size:17px;
+  line-height:1.45;
+}
+:lang(zh) body, body:lang(zh){letter-spacing:.02em}
+
+/* Фирменная деталь: полоса изразцов, как на куполах Регистана */
+.tiles{display:block;width:100%;height:34px}
+
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+header.top{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 0 6px;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.brand img{width:40px;height:40px;border-radius:10px;object-fit:cover}
+.brand b{font-size:21px;font-weight:800;letter-spacing:-.01em}
+.brand span{display:block;font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0}
+
+.langs{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.langs button{
+  font:inherit;font-size:14px;font-weight:600;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  padding:6px 10px;border-radius:999px;cursor:pointer;min-height:36px;
+}
+.langs button[aria-pressed="true"]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+
+.hero{padding:18px 0 8px}
+.hero h1{
+  font-size:clamp(28px,7.6vw,38px);line-height:1.08;font-weight:800;
+  letter-spacing:-.02em;margin:0 0 12px;
+}
+.hero p{margin:0;color:var(--muted);max-width:44ch}
+.price-chip{
+  display:inline-flex;align-items:baseline;gap:6px;margin-top:14px;
+  background:var(--paper);border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:15px;
+}
+.price-chip strong{color:var(--cobalt);font-size:17px}
+
+form{margin:18px 0 0}
+.panel{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-panel);
+  padding:18px 16px 20px;margin-bottom:12px;
+}
+.step-title{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:19px;font-weight:750}
+.step-num{
+  flex:none;width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;font-size:14px;font-weight:800;
+  background:var(--tile);color:#fff;
+}
+
+.dir{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dir label{
+  position:relative;display:block;cursor:pointer;
+  border:2px solid var(--line);border-radius:14px;padding:12px 12px 13px;
+  background:var(--stone);min-height:84px;
+}
+.dir input{position:absolute;opacity:0;pointer-events:none}
+.dir .t{display:block;font-weight:750;font-size:16px;line-height:1.2}
+.dir .d{display:block;font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.3}
+.dir input:checked + span .t{color:var(--cobalt)}
+.dir label:has(input:checked){border-color:var(--cobalt);background:var(--paper)}
+.dir label:has(input:focus-visible){outline:3px solid var(--saffron);outline-offset:2px}
+
+.field{margin-top:12px}
+.field:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+.row .field{margin-top:0;min-width:0}
+.field input{min-width:0;-webkit-appearance:none;appearance:none}
+.field label{display:block;font-size:14.5px;font-weight:650;margin-bottom:6px}
+.field input,.field textarea{
+  width:100%;font:inherit;font-size:17px;color:var(--ink);
+  background:var(--stone);border:1.5px solid var(--line);border-radius:var(--radius-field);
+  padding:12px 12px;min-height:48px;
+}
+.field textarea{min-height:76px;resize:vertical}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);opacity:.55;font-style:italic}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--cobalt);background:var(--paper)}
+.hint{display:block;font-size:13px;color:var(--muted);margin-top:5px}
+.err{display:none;font-size:13.5px;color:var(--danger);margin-top:5px;font-weight:600}
+.field.invalid input,.field.invalid textarea{border-color:var(--danger)}
+.field.invalid .err{display:block}
+
+.bags{display:flex;align-items:center;gap:14px}
+.bags button{
+  width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);
+  background:var(--stone);color:var(--ink);font-size:26px;font-weight:600;cursor:pointer;line-height:1;
+}
+.bags button:disabled{opacity:.35;cursor:default}
+.bags output{font-size:34px;font-weight:800;min-width:44px;text-align:center}
+.bags .calc{margin-left:auto;text-align:right;font-size:13.5px;color:var(--muted)}
+
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* Нижняя панель с суммой и кнопкой всегда под рукой */
+.bar{
+  position:sticky;bottom:0;z-index:5;
+  margin:0 -16px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--paper);border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;
+}
+.total{line-height:1.15}
+.total small{display:block;font-size:13px;color:var(--muted)}
+.total b{font-size:22px;font-weight:800;white-space:nowrap}
+.total i{display:block;font-style:normal;font-size:13px;color:var(--muted)}
+.btn{
+  margin-left:auto;font:inherit;font-weight:750;font-size:17px;
+  background:var(--cobalt);color:#fff;border:0;border-radius:14px;
+  padding:14px 18px;min-height:52px;cursor:pointer;
+}
+.btn:hover{background:var(--cobalt-deep)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.form-error{display:none;color:var(--danger);font-weight:600;font-size:15px;margin:4px 0 12px}
+.form-error.show{display:block}
+
+.alt{padding:22px 0 8px}
+.alt h2{font-size:17px;margin:0 0 10px;font-weight:750}
+.alt-links{display:flex;gap:10px;flex-wrap:wrap}
+.alt-links a{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  border:1.5px solid var(--line);background:var(--paper);color:var(--ink);
+  border-radius:12px;padding:11px 14px;font-weight:650;min-height:46px;
+}
+.alt-links svg{width:20px;height:20px;flex:none}
+.wechat{margin-top:10px;font-size:15px;color:var(--muted)}
+
+.done{display:none;text-align:left;padding:28px 0 12px}
+.done.show{display:block}
+.done h2{font-size:30px;line-height:1.1;margin:0 0 10px;font-weight:800;letter-spacing:-.01em}
+.ticket{
+  margin:18px 0;background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--radius-panel);overflow:hidden;
+}
+.ticket .tiles{height:14px}
+.ticket .num{font-size:44px;font-weight:800;letter-spacing:.02em;padding:14px 18px 4px;color:var(--cobalt)}
+.ticket dl{margin:0;padding:6px 18px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:15px}
+.ticket dt{color:var(--muted)}
+.ticket dd{margin:0;font-weight:600}
+.test-note{display:none;background:#FFF4D6;color:#5C4300;border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.test-note.show{display:block}
+.status{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0 4px}
+.status.found{border-color:var(--tile)}
+.status .dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:6px;background:var(--saffron)}
+.status.found .dot{background:var(--tile)}
+.status b{display:block;font-size:18px;line-height:1.25}
+.status p{margin:4px 0 0;font-size:15px;color:var(--muted)}
+.status .link-btn{padding:6px 0 0}
+@media (prefers-reduced-motion:no-preference){
+  .status.searching .dot{animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+}
+.link-btn{font:inherit;font-weight:700;color:var(--cobalt);background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:underline}
+
+footer{padding:24px 0 40px;font-size:13px;color:var(--muted)}
+
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){
+  .done.show .ticket{animation:pop .35s ease-out}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+}
+@media (max-width:360px){
+  .row{grid-template-columns:1fr}
+  .btn{padding:14px 14px;font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<svg class="tiles" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="girih" width="34" height="34" patternUnits="userSpaceOnUse">
+      <rect width="34" height="34" fill="#1D4E89"/>
+      <g transform="translate(17 17)">
+        <rect x="-8" y="-8" width="16" height="16" fill="#129AA3"/>
+        <rect x="-8" y="-8" width="16" height="16" fill="#129AA3" transform="rotate(45)"/>
+        <circle r="3.4" fill="#E3A233"/>
+      </g>
+      <circle cx="0" cy="0" r="2.4" fill="#FFFFFF"/>
+      <circle cx="34" cy="0" r="2.4" fill="#FFFFFF"/>
+      <circle cx="0" cy="34" r="2.4" fill="#FFFFFF"/>
+      <circle cx="34" cy="34" r="2.4" fill="#FFFFFF"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#girih)"/>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">
+      <!-- Положите файл logo.png рядом с этой страницей, и логотип появится здесь -->
+      <img src="logo.png" alt="" onerror="this.remove()">
+      <div><b>BagajGO</b><span>Samarkand</span></div>
+    </a>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" data-lang="uz">O'z</button>
+      <button type="button" data-lang="ru">Рус</button>
+      <button type="button" data-lang="en">Eng</button>
+      <button type="button" data-lang="zh">中文</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="orderView">
+      <div class="hero">
+        <h1 data-i="h1"></h1>
+        <p data-i="lead"></p>
+        <div class="price-chip"><span data-i="from"></span> <strong id="chipPrice"></strong></div>
+      </div>
+
+      <form id="orderForm" novalidate>
+        <div class="panel">
+          <h2 class="step-title"><span class="step-num">1</span><span data-i="s1"></span></h2>
+          <div class="dir" role="radiogroup">
+            <label>
+              <input type="radio" name="direction" value="arrive" checked>
+              <span><span class="t" data-i="arrive"></span><span class="d" data-i="arriveD"></span></span>
+            </label>
+            <label>
+              <input type="radio" name="direction" value="depart">
+              <span><span class="t" data-i="depart"></span><span class="d" data-i="departD"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title"><span class="step-num">2</span><span data-i="s2"></span></h2>
+          <div class="row">
+            <div class="field" data-req>
+              <label for="train" data-i="train"></label>
+              <input id="train" name="train" inputmode="text" autocomplete="off" >
+              <span class="err" data-i="req"></span>
+            </div>
+            <div class="field" id="carriageField" data-req>
+              <label for="carriage" data-i="carriage"></label>
+              <input id="carriage" name="carriage" inputmode="numeric" autocomplete="off" >
+              <span class="err" data-i="req"></span>
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div class="field" data-req>
+              <label for="date" data-i="date"></label>
+              <input id="date" name="date" type="date">
+              <span class="err" data-i="req"></span>
+            </div>
+            <div class="field">
+              <label for="time" id="timeLabel"></label>
+              <input id="time" name="time" type="time">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title"><span class="step-num">3</span><span data-i="s3"></span></h2>
+          <div class="bags">
+            <button type="button" id="minus" aria-label="−">−</button>
+            <output id="bagsOut" aria-live="polite">1</output>
+            <button type="button" id="plus" aria-label="+">+</button>
+            <span class="calc" id="calc"></span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title"><span class="step-num">4</span><span data-i="s4"></span></h2>
+          <div class="field">
+            <label for="name" data-i="name"></label>
+            <input id="name" name="name" autocomplete="name">
+          </div>
+          <div class="field" id="phoneField" data-req>
+            <label for="phone" data-i="phone"></label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67">
+            <span class="hint" data-i="phoneHint"></span>
+            <span class="err" id="phoneErr"></span>
+          </div>
+          <div class="field">
+            <label for="comment" data-i="comment"></label>
+            <textarea id="comment" name="comment"></textarea>
+          </div>
+          <div class="hp" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+        </div>
+
+        <p class="form-error" id="formError" role="alert"></p>
+
+        <div class="bar">
+          <div class="total">
+            <small data-i="total"></small>
+            <b id="totalSum"></b>
+            <i id="totalUsd"></i>
+          </div>
+          <button class="btn" type="button" id="submitBtn" data-i="submit"></button>
+        </div>
+      </form>
+
+      <section class="alt">
+        <h2 data-i="alt"></h2>
+        <div class="alt-links">
+          <a id="tgLink" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.4 11.8l11.2-4.3c.5-.2 1 .1.8.9l-1.9 9c-.1.6-.5.8-1 .5l-2.9-2.1-1.4 1.3c-.2.2-.3.3-.6.3l.2-3 5.4-4.9c.2-.2 0-.3-.3-.1l-6.7 4.2-2.9-.9c-.6-.2-.6-.6.1-.9z" fill="#fff"/></svg>
+            Telegram
+          </a>
+          <a id="waLink" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M12 5.6a6.3 6.3 0 0 0-5.4 9.6l-.8 3 3.1-.8A6.3 6.3 0 1 0 12 5.6zm3.6 8.9c-.2.4-.9.8-1.3.8-.3 0-.7.1-2.3-.5-1.9-.8-3.1-2.7-3.2-2.8-.1-.1-.8-1-.8-2s.5-1.4.7-1.6c.2-.2.4-.2.5-.2h.4c.1 0 .3 0 .4.3l.6 1.4c0 .1.1.3 0 .4l-.2.4-.3.3c-.1.1-.2.2-.1.4.1.2.6 1 1.3 1.6.9.8 1.6 1 1.8 1.1.2.1.4.1.5-.1l.6-.7c.1-.2.3-.2.5-.1l1.4.7c.2.1.3.1.4.2 0 .1 0 .6-.2 1z" fill="#fff"/></svg>
+            WhatsApp
+          </a>
+        </div>
+        <p class="wechat" id="wechatLine" hidden></p>
+      </section>
+    </section>
+
+    <section class="done" id="doneView" aria-live="polite">
+      <div class="test-note" id="testNote">Тестовый режим: форма ещё не подключена к Make, заявка никуда не отправлена.</div>
+      <h2 data-i="doneTitle"></h2>
+      <p id="doneText"></p>
+      <div class="status" id="statusBox" hidden>
+        <span class="dot" aria-hidden="true"></span>
+        <div>
+          <b id="statusTitle"></b>
+          <p id="statusText"></p>
+          <button class="link-btn" type="button" id="checkBtn" hidden></button>
+        </div>
+      </div>
+      <div class="ticket">
+        <svg class="tiles" aria-hidden="true" focusable="false"><rect width="100%" height="100%" fill="url(#girih)"/></svg>
+        <div class="num" id="doneNum"></div>
+        <dl id="doneList"></dl>
+      </div>
+      <button class="link-btn" type="button" id="againBtn" data-i="again"></button>
+    </section>
+  </main>
+
+  <footer data-i="footer"></footer>
+</div>
+
+<script>
+/* ===== НАСТРОЙКИ: заполните перед запуском ===== */
+const CONFIG = {
+  webhookUrl: "https://hook.us2.make.com/xurojcirswkcq8n58tn3cotokau6hz7h", // адрес вебхука Make
+  telegramBot: "sam_porters_bot",
+  whatsapp: "998906014760",    // номер WhatsApp только цифрами
+  statusUrl: "https://hook.us2.make.com/fc2tyvhm976ss57wpxo5rvujenp9idm1",             // адрес второго вебхука Make для статуса заявки (шаг 8б)
+  wechat: "",                  // WeChat ID, если есть; пусто — строка не показывается
+  priceFirst: 20000,           // первая сумка, сум
+  priceNext: 10000,            // каждая следующая, сум
+  usdRate: 12000,              // примерный курс для подсказки туристам
+  maxBags: 10
+};
+/* ================================================ */
+
+const T = {
+  uz:{
+    eg:"Masalan:", fixErr:"Qizil bilan belgilangan maydonlarni to'ldiring",
+    h1:"Samarqand vokzalida yukingizni olib boramiz",
+    lead:"Perrondan ko'chagacha va ko'chadan poyezdgacha. To'lov joyida, hammolga.",
+    from:"Birinchi sumka",
+    s1:"Qayerga olib boramiz?",
+    arrive:"Poyezddan kutib olish", arriveD:"Samarqandga kelyapsiz",
+    depart:"Poyezdga kuzatish", departD:"Samarqanddan ketyapsiz",
+    s2:"Poyezd", train:"Poyezd raqami", carriage:"Vagon raqami", date:"Sana",
+    timeArrive:"Kelish vaqti", timeDepart:"Jo'nash vaqti",
+    s3:"Nechta sumka?",
+    s4:"Siz bilan qanday bog'lanamiz",
+    name:"Ismingiz", phone:"Telefon yoki WhatsApp",
+    phoneHint:"Mamlakat kodi bilan, masalan +998 90 123 45 67",
+    comment:"Izoh (ixtiyoriy)",
+    total:"Jami", submit:"Hammol buyurtma qilish", sending:"Yuborilmoqda…",
+    req:"Bu maydonni to'ldiring", phoneBad:"Raqamni mamlakat kodi bilan kiriting",
+    netErr:"Buyurtma yuborilmadi: server bilan aloqa yo'q. Qayta urinib ko'ring yoki WhatsApp orqali yozing.",
+    alt:"Messenjerda qulayroqmi?", wechat:"WeChat ID",
+    doneTitle:"Buyurtma yuborildi",
+    doneText:"Bu raqamni formali BagajGO hammoliga ko'rsating.",
+    stSearching:"Bo'sh hammol qidirilmoqda…",
+    stFound:(n)=>`Sizning hammolingiz: ${n}`,
+    stFoundD:"U vagoningiz oldida kutib turadi. Unga buyurtma raqamini ko'rsating.",
+    stFoundDep:"U sizni vokzal oldidagi maydonda, shahar tomonida kutib oladi. Unga buyurtma raqamini ko'rsating.",
+    stPaused:"Hammol hali tasdiqlamadi. Qabul qilishi bilan sizga qo'ng'iroq qiladi.",
+    stWait:"Hammol buyurtmani qabul qilishi bilan uning ismi shu yerda paydo bo'ladi.",
+    stCheck:"Qayta tekshirish",
+    again:"Yangi buyurtma",
+    lDir:"Yo'nalish", lTrain:"Poyezd", lCar:"Vagon", lWhen:"Sana va vaqt", lBags:"Sumkalar", lSum:"Narx",
+    calc:(n)=> n>1 ? `20 000 + 10 000 × ${n-1}` : "",
+    wa:"Assalomu alaykum! BagajGO hammolini buyurtma qilmoqchiman.",
+    footer:"BagajGO Samarkand, Samarqand temir yo'l vokzali",
+    cur:"so'm"
+  },
+  ru:{
+    eg:"Например:", fixErr:"Заполните поля, выделенные красным",
+    h1:"Донесём ваш багаж на вокзале Самарканда",
+    lead:"С перрона до улицы и с улицы до поезда. Оплата на месте, носильщику.",
+    from:"Первая сумка",
+    s1:"Куда нести?",
+    arrive:"Встретить с поезда", arriveD:"Вы приезжаете в Самарканд",
+    depart:"Проводить на поезд", departD:"Вы уезжаете из Самарканда",
+    s2:"Поезд", train:"Номер поезда", carriage:"Номер вагона", date:"Дата",
+    timeArrive:"Время прибытия", timeDepart:"Время отправления",
+    s3:"Сколько сумок?",
+    s4:"Как с вами связаться",
+    name:"Имя", phone:"Телефон или WhatsApp",
+    phoneHint:"С кодом страны, например +998 90 123 45 67",
+    comment:"Комментарий (необязательно)",
+    total:"Итого", submit:"Заказать носильщика", sending:"Отправляем…",
+    req:"Заполните это поле", phoneBad:"Введите номер с кодом страны",
+    netErr:"Заявка не отправилась: нет связи с сервером. Попробуйте ещё раз или напишите нам в WhatsApp.",
+    alt:"Удобнее в мессенджере?", wechat:"WeChat ID",
+    doneTitle:"Заявка отправлена",
+    doneText:"Покажите этот номер носильщику BagajGO в форме.",
+    stSearching:"Ищем свободного носильщика…",
+    stFound:(n)=>`Ваш носильщик: ${n}`,
+    stFoundD:"Он будет ждать у вашего вагона. Покажите ему номер заказа.",
+    stFoundDep:"Он встретит вас на привокзальной площади со стороны города. Покажите ему номер заказа.",
+    stPaused:"Носильщик ещё не подтвердил заявку. Он позвонит вам, как только примет её.",
+    stWait:"Как только носильщик примет заявку, его имя появится здесь.",
+    stCheck:"Проверить ещё раз",
+    again:"Новая заявка",
+    lDir:"Направление", lTrain:"Поезд", lCar:"Вагон", lWhen:"Дата и время", lBags:"Сумки", lSum:"Цена",
+    calc:(n)=> n>1 ? `20 000 + 10 000 × ${n-1}` : "",
+    wa:"Здравствуйте! Хочу заказать носильщика BagajGO.",
+    footer:"BagajGO Samarkand, железнодорожный вокзал Самарканда",
+    cur:"сум"
+  },
+  en:{
+    eg:"e.g.", fixErr:"Fill in the fields marked in red",
+    h1:"We carry your luggage at Samarkand station",
+    lead:"From the platform to the street, and from the street to your train. Pay the porter on the spot.",
+    from:"First bag",
+    s1:"Where to?",
+    arrive:"Meet me off the train", arriveD:"You arrive in Samarkand",
+    depart:"Take me to my train", departD:"You leave Samarkand",
+    s2:"Train", train:"Train number", carriage:"Carriage number", date:"Date",
+    timeArrive:"Arrival time", timeDepart:"Departure time",
+    s3:"How many bags?",
+    s4:"How to reach you",
+    name:"Name", phone:"Phone or WhatsApp",
+    phoneHint:"With country code, e.g. +998 90 123 45 67",
+    comment:"Note (optional)",
+    total:"Total", submit:"Book a porter", sending:"Sending…",
+    req:"Fill in this field", phoneBad:"Enter the number with the country code",
+    netErr:"Your order didn't go through: no connection to the server. Try again or message us on WhatsApp.",
+    alt:"Prefer a messenger?", wechat:"WeChat ID",
+    doneTitle:"Order sent",
+    doneText:"Show this number to a BagajGO porter in uniform.",
+    stSearching:"Finding a free porter…",
+    stFound:(n)=>`Your porter: ${n}`,
+    stFoundD:"They'll wait at your carriage. Show them your order number.",
+    stFoundDep:"They'll meet you on the station square, on the city side. Show them your order number.",
+    stPaused:"No porter has confirmed yet. One will call you as soon as they accept.",
+    stWait:"As soon as a porter accepts your order, their name will appear here.",
+    stCheck:"Check again",
+    again:"New order",
+    lDir:"Service", lTrain:"Train", lCar:"Carriage", lWhen:"Date and time", lBags:"Bags", lSum:"Price",
+    calc:(n)=> n>1 ? `20,000 + 10,000 × ${n-1}` : "",
+    wa:"Hello! I'd like to book a BagajGO porter.",
+    footer:"BagajGO Samarkand, Samarkand railway station",
+    cur:"UZS"
+  },
+  zh:{
+    eg:"例如：", fixErr:"请填写红色标记的字段",
+    h1:"在撒马尔罕火车站为您搬运行李",
+    lead:"从站台到出口，或从出口到您的列车。现场付款给搬运工。",
+    from:"第一件行李",
+    s1:"搬运方向",
+    arrive:"下车接站", arriveD:"您抵达撒马尔罕",
+    depart:"送站上车", departD:"您离开撒马尔罕",
+    s2:"列车信息", train:"车次", carriage:"车厢号", date:"日期",
+    timeArrive:"到达时间", timeDepart:"发车时间",
+    s3:"几件行李？",
+    s4:"联系方式",
+    name:"姓名", phone:"电话或 WhatsApp",
+    phoneHint:"请包含国家代码，例如 +86 138 0000 0000",
+    comment:"备注（可选）",
+    total:"合计", submit:"预约搬运工", sending:"正在发送…",
+    req:"请填写此项", phoneBad:"请输入带国家代码的号码",
+    netErr:"订单未发送：无法连接服务器。请重试或通过 WhatsApp 联系我们。",
+    alt:"更习惯用聊天软件？", wechat:"微信号",
+    doneTitle:"订单已发送",
+    doneText:"请向身穿制服的 BagajGO 搬运工出示此号码。",
+    stSearching:"正在为您寻找搬运工…",
+    stFound:(n)=>`您的搬运工：${n}`,
+    stFoundD:"他会在您的车厢门口等候。请向他出示订单号。",
+    stFoundDep:"他会在火车站前广场（城市一侧）等您。请向他出示订单号。",
+    stPaused:"暂时还没有搬运工确认。确认后会立即给您打电话。",
+    stWait:"搬运工接单后，他的名字会显示在这里。",
+    stCheck:"再次查看",
+    again:"新订单",
+    lDir:"服务", lTrain:"车次", lCar:"车厢", lWhen:"日期和时间", lBags:"行李", lSum:"价格",
+    calc:(n)=> n>1 ? `20 000 + 10 000 × ${n-1}` : "",
+    wa:"您好！我想预约 BagajGO 行李搬运。",
+    footer:"BagajGO Samarkand，撒马尔罕火车站",
+    cur:"苏姆"
+  }
+};
+
+const $ = (s)=>document.querySelector(s);
+const form = $("#orderForm");
+let lang = "ru";
+let bags = 1;
+
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){ return null; } }
+
+function detectLang(){
+  const p = new URLSearchParams(location.search).get("lang");
+  if (p && T[p]) return p;
+  const saved = store("bagajgo_lang");
+  if (saved && T[saved]) return saved;
+  const n = (navigator.language||"en").toLowerCase();
+  if (n.startsWith("zh")) return "zh";
+  if (n.startsWith("uz")) return "uz";
+  if (n.startsWith("ru")||n.startsWith("kk")||n.startsWith("ky")||n.startsWith("tg")) return "ru";
+  return "en";
+}
+
+function money(n){
+  return n.toLocaleString("ru-RU").replace(/\u00a0/g," ") + " " + T[lang].cur;
+}
+function price(){ return CONFIG.priceFirst + CONFIG.priceNext*(bags-1); }
+function direction(){ return form.direction.value; }
+
+function applyLang(l){
+  lang = l;
+  document.documentElement.lang = l === "zh" ? "zh-CN" : l;
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const v = T[l][el.dataset.i];
+    if (typeof v === "string") el.textContent = v;
+  });
+  document.querySelectorAll(".langs button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===l));
+  store("bagajgo_lang", l);
+  $("#train").placeholder = T[l].eg + " 766";
+  $("#carriage").placeholder = T[l].eg + " 5";
+  if ($("#formError").classList.contains("show") && document.querySelector(".field.invalid")) $("#formError").textContent = T[l].fixErr;
+  if (CONFIG.wechat){ const w=$("#wechatLine"); w.hidden=false; w.textContent = T[l].wechat + ": " + CONFIG.wechat; }
+  updateLinks(); updateDir(); updatePrice(); refreshErrors();
+  if (current && $("#doneView").classList.contains("show")){
+    const st = $("#statusBox").dataset.state;
+    showDoneTexts();
+    if (st) renderStatus(st);
+  }
+}
+
+function updateLinks(){
+  $("#tgLink").href = "https://t.me/" + CONFIG.telegramBot;
+  const wa = $("#waLink");
+  if (CONFIG.whatsapp){ wa.hidden=false; wa.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(T[lang].wa); }
+  else wa.hidden = true;
+}
+
+function updateDir(){
+  const arrive = direction()==="arrive";
+  $("#carriageField").style.display = arrive ? "" : "none";
+  $("#timeLabel").textContent = arrive ? T[lang].timeArrive : T[lang].timeDepart;
+}
+
+function updatePrice(){
+  $("#bagsOut").textContent = bags;
+  $("#minus").disabled = bags<=1;
+  $("#plus").disabled = bags>=CONFIG.maxBags;
+  $("#calc").textContent = T[lang].calc(bags);
+  $("#chipPrice").textContent = money(CONFIG.priceFirst);
+  $("#totalSum").textContent = money(price());
+  $("#totalUsd").textContent = "≈ $" + (price()/CONFIG.usdRate).toFixed(1);
+}
+
+/* Сегодняшняя дата по времени Самарканда */
+function samarkandParts(){
+  const f = new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Samarkand",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  const o = {}; f.formatToParts(new Date()).forEach(p=>o[p.type]=p.value); return o;
+}
+function today(){ const p=samarkandParts(); return `${p.year}-${p.month}-${p.day}`; }
+/* Полный номер с датой (уникален весь год) хранится в таблице; короткий показывают клиенту и носильщику */
+function orderId(){ const p=samarkandParts(); return `${p.day}${p.month}-${p.hour}${p.minute}-${p.second}`; }
+function shortId(full){ const x=String(full).split("-"); return x.length===3 ? `${x[1]}-${x[2]}` : String(full); }
+function niceDate(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return `${d}.${m}.${y}`; }
+
+/* Проверка полей */
+function setInvalid(field, msg){
+  field.classList.add("invalid");
+  const e = field.querySelector(".err"); if (e && msg) e.textContent = msg;
+}
+function validate(){
+  let ok = true;
+  document.querySelectorAll(".field").forEach(f=>f.classList.remove("invalid"));
+  const need = [["#train"],["#date"]];
+  if (direction()==="arrive") need.push(["#carriage"]);
+  need.forEach(([sel])=>{
+    const i=$(sel); if(!i.value.trim()){ setInvalid(i.closest(".field"), T[lang].req); ok=false; }
+  });
+  const ph = $("#phone").value.trim();
+  const digits = ph.replace(/\D/g,"");
+  if (!ph){ setInvalid($("#phoneField"), T[lang].req); ok=false; }
+  else if (digits.length < 9 || digits.length > 15){ setInvalid($("#phoneField"), T[lang].phoneBad); ok=false; }
+  if (!ok){
+    const fe=$("#formError"); fe.textContent=T[lang].fixErr; fe.classList.add("show");
+    const first=document.querySelector(".field.invalid input");
+    if(first){ first.scrollIntoView({block:"center"}); first.focus({preventScroll:true}); }
+  }
+  return ok;
+}
+function refreshErrors(){
+  document.querySelectorAll(".field.invalid").forEach(f=>{
+    const e=f.querySelector(".err"); if(!e) return;
+    e.textContent = f.id==="phoneField" && $("#phone").value.trim() ? T[lang].phoneBad : T[lang].req;
+  });
+}
+
+/* Текст для группы носильщиков: всегда на узбекском */
+function groupTextUz(d){
+  const dir = d.direction==="arrive" ? "Poyezddan kutib olish" : "Poyezdga kuzatish";
+  const lines = [
+    `🔴🔴🔴 SAYTDAN BUYURTMA 🌐 🔴🔴🔴`,
+    `🧳 Yangi buyurtma #${shortId(d.order_id)}`,
+    `Yo'nalish: ${dir}`,
+    `Poyezd: ${d.train}`,
+    `Sana: ${niceDate(d.date)}${d.time ? ", vaqt: "+d.time : ""}`
+  ];
+  if (d.direction==="arrive") lines.push(`Vagon: ${d.carriage}`);
+  lines.push(`Sumkalar: ${d.bags}`, `Narx: ${d.price.toLocaleString("ru-RU").replace(/\u00a0/g," ")} so'm`);
+  if (d.name) lines.push(`Ism: ${d.name}`);
+  lines.push(`Telefon: ${d.phone}`, `Mijoz tili: ${d.lang}`);
+  if (d.comment) lines.push(`Izoh: ${d.comment}`);
+  return lines.join("\n");
+}
+
+let current = null;      // последняя заявка на экране
+let porter = "";         // имя носильщика, когда он принял заявку
+let polls = 0, pollTimer = null;
+const POLL_EVERY = 30000, POLL_MAX = 20;   // проверка раз в 30 секунд, до 10 минут
+
+function saveLast(){ if(current) store("bagajgo_last", JSON.stringify({d:current, porter, ts:Date.now()})); }
+function clearLast(){ try{ localStorage.removeItem("bagajgo_last"); }catch(e){} }
+
+function renderStatus(state){
+  const t = T[lang], box = $("#statusBox"), btn = $("#checkBtn");
+  if (!current){ box.hidden = true; return; }
+  box.hidden = false;
+  box.className = "status " + state;
+  btn.hidden = state !== "paused";
+  btn.textContent = t.stCheck;
+  if (state === "found"){ $("#statusTitle").textContent = t.stFound(porter); $("#statusText").textContent = current.direction==="arrive" ? t.stFoundD : t.stFoundDep; }
+  else if (state === "searching"){ $("#statusTitle").textContent = t.stSearching; $("#statusText").textContent = t.stWait; }
+  else { $("#statusTitle").textContent = t.stSearching; $("#statusText").textContent = t.stPaused; }
+  box.dataset.state = state;
+}
+
+async function checkStatus(){
+  if (!current || !CONFIG.statusUrl) return false;
+  try{
+    const r = await fetch(CONFIG.statusUrl + "?order_id=" + encodeURIComponent(current.order_id), {cache:"no-store"});
+    const txt = await r.text();
+    let data = null; try{ data = JSON.parse(txt); }catch(e){}
+    const name = data && typeof data.porter === "string" ? data.porter.trim() : "";
+    if (name){ porter = name; saveLast(); renderStatus("found"); return true; }
+  }catch(e){ /* нет связи: просто попробуем позже */ }
+  return false;
+}
+
+function stopPolling(){ clearTimeout(pollTimer); pollTimer = null; }
+function startPolling(){
+  stopPolling();
+  if (!CONFIG.statusUrl){ renderStatus("searching"); $("#statusTitle").textContent = current.direction==="arrive" ? T[lang].stFoundD : T[lang].stFoundDep; $("#statusText").textContent = ""; return; }
+  polls = 0; renderStatus("searching");
+  const tick = async ()=>{
+    if (document.hidden){ pollTimer = setTimeout(tick, 5000); return; }   // вкладка свёрнута: не тратим кредиты Make
+    polls++;
+    if (await checkStatus()) return;
+    if (polls >= POLL_MAX){ renderStatus("paused"); return; }
+    pollTimer = setTimeout(tick, POLL_EVERY);
+  };
+  pollTimer = setTimeout(tick, 15000);
+}
+
+function showDoneTexts(){
+  const d = current, t = T[lang];
+  $("#doneText").textContent = t.doneText;
+  const rows = [
+    [t.lDir, d.direction==="arrive" ? t.arrive : t.depart],
+    [t.lTrain, d.train],
+    [t.lWhen, niceDate(d.date) + (d.time ? ", " + d.time : "")]
+  ];
+  if (d.direction==="arrive") rows.push([t.lCar, d.carriage]);
+  rows.push([t.lBags, String(d.bags)], [t.lSum, money(d.price)]);
+  const dl = $("#doneList"); dl.innerHTML = "";
+  rows.forEach(([k,v])=>{ const dt=document.createElement("dt"); dt.textContent=k; const dd=document.createElement("dd"); dd.textContent=v; dl.append(dt,dd); });
+}
+
+function showDone(d, test){
+  current = d;
+  const t = T[lang];
+  $("#orderView").style.display = "none";
+  $("#doneView").classList.add("show");
+  $("#testNote").classList.toggle("show", !!test);
+  $("#doneNum").textContent = "#" + shortId(d.order_id);
+  $("#doneText").textContent = t.doneText;
+  const rows = [
+    [t.lDir, d.direction==="arrive" ? t.arrive : t.depart],
+    [t.lTrain, d.train],
+    [t.lWhen, niceDate(d.date) + (d.time ? ", " + d.time : "")]
+  ];
+  if (d.direction==="arrive") rows.push([t.lCar, d.carriage]);
+  rows.push([t.lBags, String(d.bags)], [t.lSum, money(d.price)]);
+  const dl = $("#doneList"); dl.innerHTML = "";
+  rows.forEach(([k,v])=>{ const dt=document.createElement("dt"); dt.textContent=k; const dd=document.createElement("dd"); dd.textContent=v; dl.append(dt,dd); });
+  window.scrollTo({top:0});
+  if (test){ $("#statusBox").hidden = true; return; }
+  saveLast();
+  if (porter) renderStatus("found"); else startPolling();
+}
+
+async function sendOrder(){
+  $("#formError").classList.remove("show");
+  if (!validate()) return;
+
+  const d = {
+    order_id: orderId(),
+    source: "web",
+    lang,
+    direction: direction(),
+    train: $("#train").value.trim(),
+    carriage: direction()==="arrive" ? $("#carriage").value.trim() : "",
+    date: $("#date").value,
+    time: $("#time").value,
+    bags,
+    price: price(),
+    name: $("#name").value.trim(),
+    phone: $("#phone").value.trim(),
+    comment: $("#comment").value.trim(),
+    created_at: new Date().toISOString()
+  };
+  d.group_text_uz = groupTextUz(d);
+
+  // Ловушка для спам-ботов: настоящий человек это поле не видит
+  if ($("#website").value){ showDone(d,false); return; }
+
+  if (!CONFIG.webhookUrl){ console.log("BagajGO test order", d); showDone(d,true); return; }
+
+  const btn = $("#submitBtn");
+  btn.disabled = true; btn.textContent = T[lang].sending;
+  try{
+    const body = new URLSearchParams();
+    Object.entries(d).forEach(([k,v])=>body.append(k, String(v)));
+    // Простой запрос без предварительной проверки CORS: Make его принимает
+    await fetch(CONFIG.webhookUrl, { method:"POST", mode:"no-cors", body });
+    porter = "";
+    showDone(d,false);
+  }catch(err){
+    const fe = $("#formError"); fe.textContent = T[lang].netErr; fe.classList.add("show");
+  }finally{
+    btn.disabled = false; btn.textContent = T[lang].submit;
+  }
+}
+/* Кнопка работает сама по себе, без отправки формы: так страница работает и в окнах предпросмотра */
+$("#submitBtn").addEventListener("click", sendOrder);
+form.addEventListener("submit", (e)=>{ e.preventDefault(); sendOrder(); });
+
+$("#minus").addEventListener("click", ()=>{ if(bags>1){ bags--; updatePrice(); } });
+$("#plus").addEventListener("click", ()=>{ if(bags<CONFIG.maxBags){ bags++; updatePrice(); } });
+form.querySelectorAll('input[name="direction"]').forEach(r=>r.addEventListener("change", updateDir));
+document.querySelectorAll(".langs button").forEach(b=>b.addEventListener("click", ()=>applyLang(b.dataset.lang)));
+document.querySelectorAll(".field input").forEach(i=>i.addEventListener("input", ()=>i.closest(".field").classList.remove("invalid")));
+$("#checkBtn").addEventListener("click", async ()=>{
+  $("#checkBtn").hidden = true;
+  if (!(await checkStatus())) startPolling();
+});
+$("#againBtn").addEventListener("click", ()=>{
+  stopPolling(); current = null; porter = ""; clearLast();
+  form.reset(); bags=1; $("#date").value = today();
+  $("#doneView").classList.remove("show"); $("#orderView").style.display="";
+  updateDir(); updatePrice(); window.scrollTo({top:0});
+});
+
+$("#date").value = today();
+$("#date").min = today();
+applyLang(detectLang());
+
+/* Если турист закрыл страницу и открыл снова, показываем его заявку и статус */
+(function restore(){
+  let saved = null;
+  try{ saved = JSON.parse(store("bagajgo_last") || "null"); }catch(e){}
+  if (!saved || !saved.d || Date.now() - saved.ts > 24*3600*1000) return;
+  porter = saved.porter || "";
+  showDone(saved.d, false);
+})();
+</script>
+</body>
+</html>
